@@ -1,0 +1,138 @@
+{
+  "name": "identification_of_nodes_using_default_cassandra_user",
+  "description": "This incident type refers to the identification of nodes in a Cassandra database that are using the default Cassandra user. This leaves the database vulnerable to security breaches, as the default user has wide-ranging access to the database. If this issue is not addressed, it can lead to data theft or unauthorized access to sensitive information. Proper configuration and management of user permissions is essential to mitigate this risk.",
+  "params": [
+    {
+      "name": "CASSANDRA_CONNECTION_SCRIPT",
+      "value": ""
+    },
+    {
+      "name": "NEW_PASSWORD",
+      "value": ""
+    },
+    {
+      "name": "CASSANDRA_LOGS",
+      "value": ""
+    },
+    {
+      "name": "NEW_USERNAME",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Identification of Nodes Using Default Cassandra User\nThis incident type refers to the identification of nodes in a Cassandra database that are using the default Cassandra user. This leaves the database vulnerable to security breaches, as the default user has wide-ranging access to the database. If this issue is not addressed, it can lead to data theft or unauthorized access to sensitive information. Proper configuration and management of user permissions is essential to mitigate this risk."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 1. Check if Cassandra is running"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `systemctl status cassandra`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 2. Check the Cassandra configuration file"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `cat /etc/cassandra/cassandra.yaml`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 3. Check if the default user is enabled"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep 'authenticator: AllowAllAuthenticator' /etc/cassandra/cassandra.yaml`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 4. Check if the default user is being used to connect to Cassandra"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep 'cassandra' ${CASSANDRA_CONNECTION_SCRIPT}`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 5. Check if any other users are being used to connect to Cassandra"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep 'username' ${CASSANDRA_CONNECTION_SCRIPT}`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 6. Check if any unauthorized access has been made to Cassandra"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep 'Authentication error' ${CASSANDRA_LOGS}`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## 7. Check if any unauthorized access has been made to the system"
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep 'Failed password' /var/log/auth.log`"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Change the default username and password of the Cassandra database to a unique, complex, and secure one."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_update_cassandra_auth($NEW_PASSWORD, $NEW_USERNAME)"
+    }
+  ]
+}
